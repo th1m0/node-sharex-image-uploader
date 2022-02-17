@@ -8,10 +8,10 @@ import uploader from './uploader'
 
 const app = express();
 
-// app.use(morgan("common"));
-// app.use(helmet());
-// app.use(cors());
-// app.use(express.json());
+app.use(morgan("common"));
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
 
 app.use("/", uploader);
 

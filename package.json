@@ -4,8 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "rm -rf ./dist/ && npm install && tsc -p ./ && node dist/index.js"
   },
   "keywords": [],
   "author": "",

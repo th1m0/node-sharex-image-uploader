@@ -6,10 +6,6 @@ import Image from '../database/models/Image';
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  
-});
-
 router.route("/upload").post(multer().single("image"), async (req: Request, res: Response, next: NextFunction) => {
   const authToken = req.header("Authentication")
   
@@ -43,6 +39,11 @@ router.get("/:imageId", async (req: Request, res: Response, next: NextFunction) 
   
   try {
     const image = await Image.findById(imageId)
+
+    if (image == null) {
+      return res.status(404).json({ message: "Cannot find Image!" })
+    }
+
     const baseChar = Buffer.from(image.data).toString("base64").charAt(0)
     let contentType = ""
 
