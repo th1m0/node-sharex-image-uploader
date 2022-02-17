@@ -1,10 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express'
 import multer from 'multer'
+import nodeCache from 'node-cache'
 
 import config from '../config'
-import Image from '../database/models/Image';
+import ImageModel, { Image } from '../database/models/Image';
 
 const router = express.Router();
+const cache = new nodeCache({ stdTTL: 60, checkperiod: 600 })
 
 router.route("/upload").post(multer().single("image"), async (req: Request, res: Response, next: NextFunction) => {
   const authToken = req.header("Authentication")
@@ -23,10 +25,11 @@ router.route("/upload").post(multer().single("image"), async (req: Request, res:
 
 
   try {
-    const image = await new Image({
+    const image = await new ImageModel({
       data: req.file.buffer
     }).save()
     res.status(200).send(config.returnUrl + image._id)
+    cache.set(image._id.toString(), image)
   } catch (error) {
     console.error("Error saving image to database: " + error)
     next(error)
@@ -37,32 +40,31 @@ router.route("/upload").post(multer().single("image"), async (req: Request, res:
 router.get("/:imageId", async (req: Request, res: Response, next: NextFunction) => {
   const { imageId } = req.params
   
+  if (cache.has(imageId)) {
+    const image = cache.get(imageId) as Image
+    const contentType = getContentType(image.data)
+
+    if (contentType == null) {
+      return res.status(400).json({ message: "Failed to find correct content type for this image." })
+    }
+
+    res.status(200).set("Content-Type", contentType).send(image.data)
+    return
+  }
+
   try {
-    const image = await Image.findById(imageId)
+    
+    const image = await ImageModel.findById(imageId)
 
     if (image == null) {
       return res.status(404).json({ message: "Cannot find Image!" })
     }
 
-    const baseChar = Buffer.from(image.data).toString("base64").charAt(0)
-    let contentType = ""
+    cache.set(image._id.toString(), image)
+    const contentType = getContentType(image.data)
 
-    switch (baseChar) {
-      case "/":
-        contentType = "image/jpeg"
-        break
-      case "i":
-        contentType = "image/png"
-        break
-      case "R":
-        contentType = "image/gif"
-        break
-      case "U":
-        contentType = "image/webp"
-        break
-      default:
-        console.log("baseChar: " + baseChar + " was not found!")
-        return res.status(400).json({ message: "Failed to find correct content type for this image." })
+    if (contentType == null) {
+      return res.status(400).json({ message: "Failed to find correct content type for this image." })
     }
 
     res.status(200).set("Content-Type", contentType).send(image.data)
@@ -70,5 +72,25 @@ router.get("/:imageId", async (req: Request, res: Response, next: NextFunction) 
     res.status(404).json({ message: "Cannot find Image!" })
   }
 })
+
+
+function getContentType(data: Buffer) {
+
+  const char = Buffer.from(data).toString("base64").charAt(0)
+
+  switch (char) {
+    case "/":
+      return "image/jpeg"
+    case "i":
+      return "image/png"
+    case "R":
+      return "image/gif"
+    case "U":
+      return "image/webp"
+    default:
+      console.log("baseChar: " + char + " was not found!")
+      return null
+  }
+}
 
 export default router;
