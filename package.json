@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc -p ./",
     "compile-watch": "tsc --watch -p ./",
-    "start": "rm -rf ./dist/ && yarn install && yarn run compile && yarn dist/index.js",
+    "start": "rm -rf ./dist/ && yarn install && yarn run compile && node dist/index.js",
     "dev": "nodemon --watch dist/ dist/index.js"
   },
   "keywords": [],
