@@ -2,7 +2,6 @@ import express, { Request, Response, NextFunction } from 'express'
 import multer from 'multer'
 import nodeCache from 'node-cache'
 
-import config from '../config'
 import ImageModel, { Image } from '../database/models/Image';
 
 const router = express.Router();
@@ -15,7 +14,7 @@ router.route("/upload").post(multer().single("image"), async (req: Request, res:
     return res.status(401).json({ message: "Please specify authentication!" })
   }
   
-  if (authToken != config.token) {
+  if (authToken != process.env.TOKEN) {
     return res.status(401).json({ message: "Authentication Failed!" })
   }
 
@@ -28,7 +27,7 @@ router.route("/upload").post(multer().single("image"), async (req: Request, res:
     const image = await new ImageModel({
       data: req.file.buffer
     }).save()
-    res.status(200).send(config.returnUrl + image._id)
+    res.status(200).send(process.env.RETURN_URL! + image._id)
     cache.set(image._id.toString(), image)
   } catch (error) {
     console.error("Error saving image to database: " + error)

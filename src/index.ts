@@ -1,11 +1,13 @@
+import { config } from "dotenv"
+config()
+
 import app from './app'
-import config from './config'
 import database from './database';
 
-const port = config.port
+const port = process.env.PORT
 
 //Connect mongo
-database(config.database.uri)
+database(process.env.DATABASE_URI!)
 
 app.listen(port, () => {
   console.log(`Listening: http://localhost:${port}`);
