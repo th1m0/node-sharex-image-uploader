@@ -98,6 +98,6 @@ function getContentType(data: Buffer) {
   }
 }
 
-const extensions = ["img", "jpg", "gif", "webp"]
+const extensions = ["png", "jpg", "gif", "webp"]
 
 export default router;
