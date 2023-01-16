@@ -37,7 +37,13 @@ router.route("/upload").post(multer().single("image"), async (req: Request, res:
 })
 
 router.get("/:imageId", async (req: Request, res: Response, next: NextFunction) => {
-  const { imageId } = req.params
+  let { imageId } = req.params
+
+  for (const extension of extensions) {
+    if (imageId.endsWith(`.${extension}`)) {
+      imageId = imageId.replace(`.${extension}`, "")
+    }
+  }
   
   if (cache.has(imageId)) {
     const image = cache.get(imageId) as Image
@@ -91,5 +97,7 @@ function getContentType(data: Buffer) {
       return null
   }
 }
+
+const extensions = ["img", "jpg", "gif", "webp"]
 
 export default router;
