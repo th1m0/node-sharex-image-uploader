@@ -8,7 +8,7 @@ import uploader from './uploader'
 
 const app = express();
 
-app.use(morgan("common"));
+app.use(morgan("combined"));
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "100mb"}));
