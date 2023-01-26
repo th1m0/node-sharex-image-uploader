@@ -7,7 +7,7 @@ import ImageModel, { Image } from '../database/models/Image';
 const router = express.Router();
 const cache = new nodeCache({ stdTTL: 60, checkperiod: 600 })
 
-router.route("/upload").post(multer().single("image"), async (req: Request, res: Response, next: NextFunction) => {
+router.route("/upload").post(multer().single("image"), async (req, res, next) => {
   const authToken = req.header("Authentication")
   
   if (!authToken) {
@@ -36,7 +36,7 @@ router.route("/upload").post(multer().single("image"), async (req: Request, res:
   }
 })
 
-router.get("/:imageId", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/:imageId", async (req, res, next) => {
   let { imageId } = req.params
 
   for (const extension of extensions) {
@@ -46,7 +46,7 @@ router.get("/:imageId", async (req: Request, res: Response, next: NextFunction) 
   }
   
   if (cache.has(imageId)) {
-    const image = cache.get(imageId) as Image
+    const image = cache.get<Image>(imageId)!
     const contentType = getContentType(image.data)
 
     if (contentType == null) {
